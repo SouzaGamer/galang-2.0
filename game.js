@@ -746,8 +746,27 @@ function resetGame() {
     spawnLevelWave(currentLevel);
 }
 
-// Loop Principal de Atualização
-function gameLoop() {
+// Variáveis para travar o jogo a 60 FPS fixos
+let lastFrameTime = 0;
+const fps = 60;
+const frameInterval = 1000 / fps; // ~16.66ms por frame
+
+function gameLoop(currentTime) {
+    // Solicita o próximo frame
+    requestAnimationFrame(gameLoop);
+
+    // Calcula o tempo decorrido desde o último frame
+    const elapsed = currentTime - lastFrameTime;
+
+    // Se ainda não passou o tempo de 1 frame (16.6ms), ignora esta atualização
+    if (elapsed < frameInterval) return;
+
+    // Ajusta o tempo do último frame ignorando eventuais atrasos acumulados
+    lastFrameTime = currentTime - (elapsed % frameInterval);
+
+    // =========================================================================
+    // LÓGICA DO JOGO (MANTÉM O TEU CÓDIGO NORMAL ABAIXO)
+    // =========================================================================
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     updateStars();
     drawStageBackground(currentLevel);
@@ -924,7 +943,11 @@ function gameLoop() {
         }
     }
 
-    requestAnimationFrame(gameLoop);
+    updateLivesUI();
+    requestAnimationFrame(timestamp => {
+    lastFrameTime = timestamp;
+    gameLoop(timestamp);
+    })
 }
 
 // Finalização do Jogo
@@ -941,7 +964,7 @@ function handleGameOver() {
 startBtn.addEventListener('click', async () => {
     audio.init();
     
-    // Se o jogo acabou, salva o score atual ANTES de resetar as variáveis
+    // Se o jogo acabou, salva o score atual antes de resetar
     if (gameState === 'GAMEOVER') {
         const initials = playerNameInput.value.trim() || 'ACE';
         await saveHighScoreToCloud(initials, score, currentLevel);
@@ -951,10 +974,10 @@ startBtn.addEventListener('click', async () => {
     nameInputContainer.classList.add('hidden');
     nameInputContainer.classList.remove('flex');
     
-    // Reseta completamente as variáveis de estado do jogo
+    // Reseta completamente as variáveis, pontuação e fases
     resetGame();
     
-    // Muda o estado para jogando e esconde o menu overlay
+    // Altera o estado para jogando e esconde o menu overlay
     gameState = 'PLAYING';
     overlay.classList.add('hidden');
 });
