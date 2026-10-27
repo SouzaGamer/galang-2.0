@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Galaga Neo Arcade</title>
+
+    <!-- Tailwind CSS (CDN) & Google Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Firebase SDK (Google Cloud Firestore) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="h-screen w-screen flex flex-col items-center justify-center p-0 sm:p-4 bg-slate-950 text-white font-mono">
+
+    <div class="relative w-full max-w-2xl h-full max-h-[920px] flex flex-col items-center justify-between bg-slate-950 rounded-none sm:rounded-2xl border-0 sm:border-4 border-slate-800 shadow-[0_0_50px_rgba(0,240,255,0.2)] overflow-hidden">
+        
+        <!-- HUD Header -->
+        <div class="w-full bg-slate-900/90 backdrop-blur px-4 py-3 flex justify-between items-center border-b-2 border-slate-800 z-30 text-[10px] sm:text-xs tracking-wider">
+            <div class="flex flex-col gap-1">
+                <span class="text-cyan-400 font-bold">PONTOS</span>
+                <span id="scoreText" class="text-yellow-400 glow-yellow text-xs sm:text-sm">000000</span>
+            </div>
+            <div class="flex flex-col items-center gap-1">
+                <span class="text-pink-500 font-bold">FASE</span>
+                <span id="levelText" class="text-pink-400 glow-pink text-xs sm:text-sm">NÍVEL 1</span>
+            </div>
+            <div class="flex flex-col items-end gap-1">
+                <span class="text-emerald-400 font-bold">VIDAS</span>
+                <div id="livesContainer" class="flex gap-1.5 items-center"></div>
+            </div>
+        </div>
+
+        <!-- Canvas Container -->
+        <div class="crt-container relative w-full flex-1 bg-black flex items-center justify-center overflow-hidden">
+            <canvas id="gameCanvas" class="block w-full h-full object-contain"></canvas>
+
+            <!-- Main Menu / Game Over / Victory Overlay Screen -->
+            <div id="overlay" class="absolute inset-0 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-40 transition-opacity duration-300">
+                <h1 id="overlayTitle" class="text-3xl sm:text-5xl font-black text-cyan-400 mb-2 glow-cyan tracking-widest uppercase">GALAGA NEO</h1>
+                <p class="text-[10px] sm:text-xs text-pink-400 mb-4 tracking-widest uppercase glow-pink">HARDCORE EDITION</p>
+
+                <p id="overlaySubtitle" class="text-[10px] sm:text-xs text-slate-300 mb-4 leading-relaxed max-w-md font-rajdhani text-sm sm:text-base">
+                    Sobreviva às investidas alienígenas e vença o desafio!<br>
+                    Os <span class="text-cyan-400 font-bold">POWER-UPS</span> são ultra raros.<br>
+                    Controles: <span class="text-cyan-400 font-bold">SETAS / A-D</span> para mover, <span class="text-yellow-400 font-bold">ESPAÇO</span> para atirar.
+                </p>
+
+                <!-- Input de Nome / Iniciais (para o Google Cloud Firestore) -->
+                <div id="nameInputContainer" class="hidden flex-col items-center gap-2 mb-4">
+                    <label for="playerNameInput" class="text-[10px] text-yellow-400">DIGITE SUAS INICIAIS (MAX 3):</label>
+                    <input type="text" id="playerNameInput" maxlength="3" placeholder="ACE" class="bg-slate-900 border-2 border-cyan-400 text-center text-xl text-cyan-400 uppercase tracking-widest w-24 py-1 rounded focus:outline-none focus:ring-2 focus:ring-cyan-300 font-bold">
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3 w-full max-w-xs justify-center">
+                    <button id="startBtn" class="arcade-btn px-6 py-3.5 rounded-lg text-white font-bold text-xs sm:text-sm cursor-pointer tracking-widest uppercase w-full">
+                        JOGAR AGORA
+                    </button>
+                    <button id="leaderboardBtn" class="arcade-btn-pink px-4 py-3.5 rounded-lg text-white font-bold text-xs sm:text-sm cursor-pointer tracking-widest uppercase w-full sm:w-auto">
+                        RANKING
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal do Ranking Global (Google Cloud) -->
+            <div id="leaderboardModal" class="hidden absolute inset-0 bg-slate-950/95 backdrop-blur-lg flex-col items-center justify-center p-6 z-50">
+                <h2 class="text-xl sm:text-2xl text-yellow-400 glow-yellow mb-4 font-bold tracking-wider">TOP 10 PILOTOS</h2>
+                
+                <div class="w-full max-w-md bg-slate-900/80 rounded-lg p-4 border border-slate-800 mb-4 h-64 overflow-y-auto">
+                    <div id="leaderboardList" class="flex flex-col gap-2 text-xs sm:text-sm">
+                        <p class="text-center text-slate-500 py-8">Carregando dados do Google Cloud...</p>
+                    </div>
+                </div>
+
+                <button id="closeLeaderboardBtn" class="arcade-btn px-6 py-2 rounded-lg text-white text-xs font-bold uppercase tracking-wider">
+                    VOLTAR
+                </button>
+            </div>
+        </div>
+
+        <!-- Touch Controls para telas Mobile -->
+        <div class="w-full bg-slate-950 p-3 border-t-2 border-slate-800 flex justify-between items-center sm:hidden z-30">
+            <div class="flex gap-2">
+                <button id="btnLeft" class="w-16 h-14 bg-slate-800 active:bg-slate-700 border-2 border-slate-600 rounded-lg text-2xl font-bold flex items-center justify-center active:scale-95 transition">◀</button>
+                <button id="btnRight" class="w-16 h-14 bg-slate-800 active:bg-slate-700 border-2 border-slate-600 rounded-lg text-2xl font-bold flex items-center justify-center active:scale-95 transition">▶</button>
+            </div>
+            <button id="btnFire" class="w-24 h-14 arcade-btn-pink rounded-lg text-xs font-bold flex items-center justify-center active:scale-95 transition tracking-wider">FOGO</button>
+        </div>
+    </div>
+
+    <!-- Script com toda a lógica do jogo e conexão de rede -->
+    <script src="game.js"></script>
+</body>
+</html>

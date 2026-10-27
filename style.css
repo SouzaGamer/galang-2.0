@@ -1,0 +1,71 @@
+/* Reset Básico e Seleção */
+* {
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+body {
+    background-color: #030308;
+    font-family: 'Press Start 2P', monospace;
+    overflow: hidden;
+    color: #fff;
+}
+
+.font-rajdhani {
+    font-family: 'Rajdhani', sans-serif;
+}
+
+/* Efeito Tela CRT (Linhas de Varredura Scanlines) */
+.crt-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.crt-container::after {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%), 
+                linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 255, 0, 0.03));
+    background-size: 100% 4px, 6px 100%;
+    pointer-events: none;
+    z-index: 25;
+}
+
+/* Efeitos Neon (Glow) */
+.glow-cyan { text-shadow: 0 0 10px #00f0ff, 0 0 20px #00f0ff; }
+.glow-pink { text-shadow: 0 0 10px #ff0055, 0 0 20px #ff0055; }
+.glow-yellow { text-shadow: 0 0 10px #ffcc00, 0 0 20px #ffcc00; }
+
+/* Botões Arcade em Estilo Neon */
+.arcade-btn {
+    background: linear-gradient(180deg, #00f0ff 0%, #0077aa 100%);
+    border: 2px solid #73f7ff;
+    box-shadow: 0 4px 0 #004466, 0 6px 15px rgba(0, 240, 255, 0.4);
+    transition: all 0.1s ease;
+}
+
+.arcade-btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 #004466, 0 2px 5px rgba(0, 240, 255, 0.4);
+}
+
+.arcade-btn-pink {
+    background: linear-gradient(180deg, #ff0055 0%, #990033 100%);
+    border: 2px solid #ff6699;
+    box-shadow: 0 4px 0 #55001d, 0 6px 15px rgba(255, 0, 85, 0.4);
+    transition: all 0.1s ease;
+}
+
+.arcade-btn-pink:active {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 #55001d;
+}
+
+/* Scrollbar Customizada */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0a0a16; }
+::-webkit-scrollbar-thumb { background: #00f0ff; border-radius: 3px; }
