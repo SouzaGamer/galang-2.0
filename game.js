@@ -964,7 +964,7 @@ function handleGameOver() {
 startBtn.addEventListener('click', async () => {
     audio.init();
     
-    // Se o jogo acabou, salva o score atual antes de resetar
+    // Se o jogo acabou, salva o score na nuvem antes de resetar
     if (gameState === 'GAMEOVER') {
         const initials = playerNameInput.value.trim() || 'ACE';
         await saveHighScoreToCloud(initials, score, currentLevel);
@@ -974,10 +974,10 @@ startBtn.addEventListener('click', async () => {
     nameInputContainer.classList.add('hidden');
     nameInputContainer.classList.remove('flex');
     
-    // Reseta completamente as variáveis, pontuação e fases
+    // Reseta completamente todas as variáveis do jogo (pontos, vidas, inimigos)
     resetGame();
     
-    // Altera o estado para jogando e esconde o menu overlay
+    // Altera o estado para jogando e esconde a tela de overlay
     gameState = 'PLAYING';
     overlay.classList.add('hidden');
 });
