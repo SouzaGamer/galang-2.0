@@ -2,7 +2,6 @@
 // MÓDULO 1: GOOGLE CLOUD FIRESTORE INTEGRATION
 // ============================================================================
 
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyBqcoqj5ml2bAN2J8Os-pcS7paCap98jxw",
   authDomain: "galang-cee38.firebaseapp.com",
@@ -13,7 +12,6 @@ const firebaseConfig = {
   measurementId: "G-EY8V2P5ZKB"
 };
 
-// Inicializa o Firebase apenas se a chave for informada
 let db = null;
 try {
     if (firebaseConfig.apiKey !== "SUA_API_KEY_AQUI") {
@@ -107,6 +105,9 @@ const overlay = document.getElementById('overlay');
 const overlayTitle = document.getElementById('overlayTitle');
 const overlaySubtitle = document.getElementById('overlaySubtitle');
 const startBtn = document.getElementById('startBtn');
+const saveScoreBtn = document.getElementById('saveScoreBtn');
+const restartBtn = document.getElementById('restartBtn');
+const gameOverButtons = document.getElementById('gameOverButtons');
 const nameInputContainer = document.getElementById('nameInputContainer');
 const playerNameInput = document.getElementById('playerNameInput');
 const leaderboardBtn = document.getElementById('leaderboardBtn');
@@ -293,15 +294,12 @@ function updateStars() {
 }
 
 function drawStageBackground(level) {
-    // Define um tom de cor único baseado diretamente no número da fase usando HSL
     const hue = (level * 45) % 360;
 
     if (level === 1) { 
-        // Fase 1: Azul Espacial Clássico
         ctx.fillStyle = '#03030d';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     } else if (level === 2) { 
-        // Fase 2: Nebulosa Laranja com Asteroides Flutuantes
         ctx.fillStyle = '#0d0703';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -323,7 +321,6 @@ function drawStageBackground(level) {
             ctx.restore();
         });
     } else if (level === 3) { 
-        // Fase 3: Gradiente Radial Roxo Profundo
         const grad = ctx.createRadialGradient(
             canvas.width / 2, canvas.height / 2, 20,
             canvas.width / 2, canvas.height / 2, canvas.height * 0.7
@@ -333,7 +330,6 @@ function drawStageBackground(level) {
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     } else if (level === 4) { 
-        // Fase 4: Grid Cibernético Neon
         ctx.fillStyle = '#020b14';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -348,7 +344,6 @@ function drawStageBackground(level) {
             ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
         }
     } else { 
-        // Fase 5 em diante: Gradientes Dinâmicos Únicos gerados por matemática (muda a cor a cada fase nova)
         const grad = ctx.createRadialGradient(
             canvas.width / 2, canvas.height * 0.3, 10,
             canvas.width / 2, canvas.height * 0.3, canvas.width
@@ -401,16 +396,15 @@ class Particle {
 // MÓDULO 5: ENTIDADES DO JOGO
 // ============================================================================
 
-// Nave do Jogador
 class Player {
     constructor() {
         this.width = 44;
         this.height = 44;
         this.x = canvas.width / 2 - this.width / 2;
         this.y = canvas.height - 75;
-        this.speed = 6.5;
+        this.speed = 4.5;
         this.invulnerable = 0;
-        this.weaponLevel = 1; // 1: Single, 2: Double, 3: Triple, 4: Quad Burst
+        this.weaponLevel = 1;
         this.fireRateTimer = 0;
         this.shieldTimer = 0;
         this.tilt = 0;
@@ -424,7 +418,6 @@ class Player {
         if (this.fireRateTimer > 0) this.fireRateTimer--;
         if (this.shieldTimer > 0) this.shieldTimer--;
 
-        // Propulsores e Efeitos de Rastro
         if (Math.random() < 0.75) {
             const engineColor = this.fireRateTimer > 0 ? '#ffcc00' : (this.weaponLevel >= 3 ? '#ff0055' : '#00f0ff');
             particles.push(new Particle(this.x + 10, this.y + this.height - 2, engineColor, 0.6));
@@ -438,7 +431,6 @@ class Player {
         ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
         ctx.rotate(this.tilt);
 
-        // Escudo de Energia
         if (this.shieldTimer > 0) {
             ctx.save();
             ctx.beginPath();
@@ -453,12 +445,10 @@ class Player {
             ctx.restore();
         }
 
-        // Render da Aeronave Principal
         const glowColor = this.weaponLevel >= 3 ? '#ff0055' : (this.fireRateTimer > 0 ? '#ffcc00' : '#00f0ff');
         ctx.shadowBlur = 18;
         ctx.shadowColor = glowColor;
 
-        // Asas
         ctx.fillStyle = '#0066aa';
         ctx.beginPath();
         ctx.moveTo(-26, 18); ctx.lineTo(-28, 2); ctx.lineTo(-14, -12); ctx.lineTo(-10, 16);
@@ -468,21 +458,18 @@ class Player {
         ctx.moveTo(26, 18); ctx.lineTo(28, 2); ctx.lineTo(14, -12); ctx.lineTo(10, 16);
         ctx.closePath(); ctx.fill();
 
-        // Fuselagem
         ctx.fillStyle = glowColor;
         ctx.beginPath();
         ctx.moveTo(0, -26); ctx.lineTo(12, -8); ctx.lineTo(18, 14); ctx.lineTo(8, 22);
         ctx.lineTo(0, 18); ctx.lineTo(-8, 22); ctx.lineTo(-18, 14); ctx.lineTo(-12, -8);
         ctx.closePath(); ctx.fill();
 
-        // Canhões Adicionais de Acordo com Nível da Arma
         if (this.weaponLevel >= 2) {
             ctx.fillStyle = '#ffcc00';
             ctx.fillRect(-28, -6, 4, 20);
             ctx.fillRect(24, -6, 4, 20);
         }
 
-        // Cockpit
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
         ctx.moveTo(0, -20); ctx.lineTo(6, -6); ctx.lineTo(0, 3); ctx.lineTo(-6, -6);
@@ -492,7 +479,6 @@ class Player {
     }
 }
 
-// Bônus e Power-Ups
 class PowerUp {
     constructor(x, y, type) {
         this.x = x; this.y = y; this.type = type;
@@ -522,7 +508,6 @@ class PowerUp {
     }
 }
 
-// Tiros e Projéteis
 class Bullet {
     constructor(x, y, vx = 0, isEnemy = false, vy = null) {
         this.x = x; this.y = y; this.vx = vx;
@@ -540,7 +525,6 @@ class Bullet {
     }
 }
 
-// Inimigos e Voo Inteligente
 class Enemy {
     constructor(gridX, gridY, type, level) {
         this.gridX = gridX; this.gridY = gridY; this.type = type;
@@ -666,7 +650,7 @@ class Enemy {
     }
 }
 
-// Estágio e Variáveis Globais de Estado
+// Variáveis Globais
 let gameState = 'START';
 let score = 0;
 let lives = 3;
@@ -746,27 +730,75 @@ function resetGame() {
     spawnLevelWave(currentLevel);
 }
 
-// Variáveis para travar o jogo a 60 FPS fixos
+// ============================================================================
+// CONTROLOS DO OVERLAY E BOTÕES
+// ============================================================================
+function handleGameOver() {
+    gameState = 'GAMEOVER';
+    audio.playExplosion(true);
+    
+    overlayTitle.textContent = "GAME OVER";
+    overlaySubtitle.innerHTML = `Sua pontuação final no Nível ${currentLevel}:<br><span class="text-2xl text-yellow-400 glow-yellow font-bold">${score}</span>`;
+    
+    startBtn.classList.add('hidden');
+    gameOverButtons.classList.remove('hidden');
+    gameOverButtons.classList.add('flex');
+
+    nameInputContainer.classList.remove('hidden');
+    nameInputContainer.classList.add('flex');
+    overlay.classList.remove('hidden');
+}
+
+startBtn.addEventListener('click', () => {
+    audio.init();
+    nameInputContainer.classList.add('hidden');
+    nameInputContainer.classList.remove('flex');
+    resetGame();
+    gameState = 'PLAYING';
+    overlay.classList.add('hidden');
+});
+
+saveScoreBtn.addEventListener('click', async () => {
+    audio.init();
+    const initials = playerNameInput.value.trim() || 'ACE';
+    await saveHighScoreToCloud(initials, score, currentLevel);
+    saveScoreBtn.textContent = "SALVO!";
+    saveScoreBtn.disabled = true;
+    saveScoreBtn.classList.add('opacity-50', 'cursor-not-allowed');
+});
+
+restartBtn.addEventListener('click', () => {
+    audio.init();
+    nameInputContainer.classList.add('hidden');
+    nameInputContainer.classList.remove('flex');
+    
+    saveScoreBtn.textContent = "SALVAR RANKING";
+    saveScoreBtn.disabled = false;
+    saveScoreBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+    gameOverButtons.classList.add('hidden');
+    gameOverButtons.classList.remove('flex');
+    startBtn.classList.remove('hidden');
+
+    resetGame();
+    gameState = 'PLAYING';
+    overlay.classList.add('hidden');
+});
+
+// ============================================================================
+// LOOP PRINCIPAL (TRAVADO A 60 FPS)
+// ============================================================================
 let lastFrameTime = 0;
 const fps = 60;
-const frameInterval = 1000 / fps; // ~16.66ms por frame
+const frameInterval = 1000 / fps;
 
 function gameLoop(currentTime) {
-    // Solicita o próximo frame
     requestAnimationFrame(gameLoop);
 
-    // Calcula o tempo decorrido desde o último frame
     const elapsed = currentTime - lastFrameTime;
-
-    // Se ainda não passou o tempo de 1 frame (16.6ms), ignora esta atualização
     if (elapsed < frameInterval) return;
-
-    // Ajusta o tempo do último frame ignorando eventuais atrasos acumulados
     lastFrameTime = currentTime - (elapsed % frameInterval);
 
-    // =========================================================================
-    // LÓGICA DO JOGO (MANTÉM O TEU CÓDIGO NORMAL ABAIXO)
-    // =========================================================================
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     updateStars();
     drawStageBackground(currentLevel);
@@ -774,7 +806,6 @@ function gameLoop(currentTime) {
     if (gameState === 'PLAYING') {
         updateFormationMovement(currentLevel);
 
-        // Tiro
         const fireDelay = player.fireRateTimer > 0 ? 70 : 150;
         if (keys.shoot && Date.now() - lastShootTime > fireDelay) {
             const pX = player.x + player.width / 2, pY = player.y;
@@ -800,13 +831,11 @@ function gameLoop(currentTime) {
         player.update();
         player.draw();
 
-        // Tiros do Jogador
         bullets.forEach((bullet, bIdx) => {
             bullet.update(); bullet.draw();
             if (bullet.y < -20 || bullet.x < 0 || bullet.x > canvas.width) bullets.splice(bIdx, 1);
         });
 
-        // Bônus e Power-Ups
         powerUps.forEach((pu, puIdx) => {
             pu.update(); pu.draw();
             const dist = Math.hypot((player.x + player.width / 2) - pu.x, (player.y + player.height / 2) - pu.y);
@@ -821,7 +850,6 @@ function gameLoop(currentTime) {
             } else if (pu.y > canvas.height + 30) powerUps.splice(puIdx, 1);
         });
 
-        // Tiros Inimigos
         enemyBullets.forEach((bullet, ebIdx) => {
             bullet.update(); bullet.draw();
             if (player.invulnerable === 0 && player.shieldTimer === 0 && bullet.x > player.x && bullet.x < player.x + player.width && bullet.y > player.y && bullet.y < player.y + player.height) {
@@ -832,6 +860,7 @@ function gameLoop(currentTime) {
 
                 if (lives <= 0) {
                     handleGameOver();
+                    return;
                 } else {
                     restartCurrentStage();
                 }
@@ -841,7 +870,6 @@ function gameLoop(currentTime) {
             if (bullet.y > canvas.height + 20 || bullet.y < -20) enemyBullets.splice(ebIdx, 1);
         });
 
-        // Inimigos e Colisões
         let activeEnemies = 0;
         enemies.forEach((enemy, eIdx) => {
             if (!enemy) return;
@@ -849,30 +877,23 @@ function gameLoop(currentTime) {
             enemy.update(currentLevel, formationOffsetX, formationOffsetY, player.x, player.y);
             enemy.draw();
 
-            // Lógica de Colisão Corrigida (Caixa contra Caixa + Tolerância de Velocidade)
             bullets.forEach((bullet, bIdx) => {
                 const bulletLeft = bullet.x - bullet.width / 2;
                 const bulletRight = bullet.x + bullet.width / 2;
                 const bulletTop = bullet.y;
-                const bulletBottom = bullet.y + bullet.height + 10; // Adicionada tolerância para compensar velocidade alta
+                const bulletBottom = bullet.y + bullet.height + 10;
 
                 const enemyLeft = enemy.x;
                 const enemyRight = enemy.x + enemy.width;
                 const enemyTop = enemy.y;
                 const enemyBottom = enemy.y + enemy.height;
 
-                // Verificação AABB completa de sobreposição das caixas
-                if (bulletRight >= enemyLeft && 
-                    bulletLeft <= enemyRight && 
-                    bulletBottom >= enemyTop && 
-                    bulletTop <= enemyBottom) {
-                    
+                if (bulletRight >= enemyLeft && bulletLeft <= enemyRight && bulletBottom >= enemyTop && bulletTop <= enemyBottom) {
                     bullets.splice(bIdx, 1);
                     enemy.hp--;
                     if (enemy.hp <= 0) {
                         triggerExplosion(enemy.x + enemy.width / 2, enemy.y + enemy.height / 2, enemy.type === 2 ? '#ff0055' : '#00ff66', 20, enemy.type === 2);
                         
-                        // Lógica Aprimorada de Drop de Power-Ups
                         if (Math.random() < (enemy.type === 2 ? 0.35 : 0.08)) {
                             const types = ['RAPID_FIRE', 'DOUBLE_SHOT', 'SHIELD', 'BOMB', 'EXTRA_LIFE'];
                             const selectedType = types[Math.floor(Math.random() * types.length)];
@@ -885,7 +906,6 @@ function gameLoop(currentTime) {
                 }
             });
 
-            // Colisão Direta
             if (enemy.x < player.x + player.width && enemy.x + enemy.width > player.x && enemy.y < player.y + player.height && enemy.y + enemy.height > player.y) {
                 triggerExplosion(enemy.x + enemy.width / 2, enemy.y + enemy.height / 2);
                 enemies.splice(eIdx, 1);
@@ -894,6 +914,7 @@ function gameLoop(currentTime) {
                     updateLivesUI();
                     if (lives <= 0) {
                         handleGameOver();
+                        return;
                     } else {
                         restartCurrentStage();
                     }
@@ -944,43 +965,11 @@ function gameLoop(currentTime) {
     }
 
     updateLivesUI();
-    requestAnimationFrame(timestamp => {
+}
+
+// Inicialização do Jogo
+updateLivesUI();
+requestAnimationFrame(timestamp => {
     lastFrameTime = timestamp;
     gameLoop(timestamp);
-    })
-}
-
-// Finalização do Jogo
-function handleGameOver() {
-    gameState = 'GAMEOVER';
-    overlayTitle.textContent = "GAME OVER";
-    overlaySubtitle.innerHTML = `Sua pontuação final no Nível ${currentLevel}:<br><span class="text-2xl text-yellow-400 glow-yellow font-bold">${score}</span>`;
-    startBtn.textContent = "SALVAR & REINICIAR";
-    nameInputContainer.classList.remove('hidden');
-    nameInputContainer.classList.add('flex');
-    overlay.classList.remove('hidden');
-}
-
-startBtn.addEventListener('click', async () => {
-    audio.init();
-    
-    // Se o jogo acabou, salva o score na nuvem antes de resetar
-    if (gameState === 'GAMEOVER') {
-        const initials = playerNameInput.value.trim() || 'ACE';
-        await saveHighScoreToCloud(initials, score, currentLevel);
-    }
-
-    // Esconde os campos de input do ranking
-    nameInputContainer.classList.add('hidden');
-    nameInputContainer.classList.remove('flex');
-    
-    // Reseta completamente todas as variáveis do jogo (pontos, vidas, inimigos)
-    resetGame();
-    
-    // Altera o estado para jogando e esconde a tela de overlay
-    gameState = 'PLAYING';
-    overlay.classList.add('hidden');
 });
-
-updateLivesUI();
-requestAnimationFrame(gameLoop);
